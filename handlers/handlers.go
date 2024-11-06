@@ -56,6 +56,7 @@ func GetSongByID(c *gin.Context) {
 	songID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	for _, song := range Songs {
@@ -75,6 +76,7 @@ func GetArtistByID(c *gin.Context) {
 	artistID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	for _, artist := range Artists {
 		if artistID == artist.ID {
@@ -93,6 +95,7 @@ func GetAlbumByID(c *gin.Context) {
 	albumID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	for _, album := range Albums {
 		if albumID == album.ID {
