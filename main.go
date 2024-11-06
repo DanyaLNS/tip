@@ -3,170 +3,271 @@ package main
 import (
 	"fmt"
 	"math"
+	"sort"
+	"strconv"
+	"strings"
+	"unicode"
 )
 
-// 1. Сумма цифр числа
-func sumOfDigits(n int) int {
-	sum := 0
-	for n != 0 {
-		sum += n % 10
-		n /= 10
+
+// 1. Перевод чисел из одной системы счисления в другую
+func convertBase(number string, fromBase, toBase int) (string, error) {
+	num, err := strconv.ParseInt(number, fromBase, 64)
+	if err != nil {
+		return "", err
 	}
-	return sum
+	return strconv.FormatInt(num, toBase), nil
 }
 
-// 2. Преобразование температуры
-func celsiusToFahrenheit(celsius float64) float64 {
-	return celsius*9/5 + 32
-}
-
-// 3. Удвоение каждого элемента массива
-func doubleArray(arr []int) []int {
-	result := make([]int, len(arr))
-	for i, v := range arr {
-		result[i] = v * 2
+// 2. Решение квадратного уравнения
+func solveQuadratic(a, b, c float64) (complex128, complex128) {
+	discriminant := b*b - 4*a*c
+	sqrtDiscriminant := complex(math.Sqrt(math.Abs(discriminant)), 0)
+	if discriminant < 0 {
+		sqrtDiscriminant = complex(0, math.Sqrt(-discriminant))
 	}
-	return result
+	root1 := (-complex(b, 0) + sqrtDiscriminant) / (2 * complex(a, 0))
+	root2 := (-complex(b, 0) - sqrtDiscriminant) / (2 * complex(a, 0))
+	return root1, root2
 }
 
-// 4. Объединение строк
-func joinStrings(words []string) string {
-	result := ""
-	for i, word := range words {
-		result += word
-		if i < len(words)-1 {
-			result += " "
+// 3. Сортировка чисел по модулю
+func sortByAbsolute(arr []int) []int {
+	sort.Slice(arr, func(i, j int) bool {
+		return math.Abs(float64(arr[i])) < math.Abs(float64(arr[j]))
+	})
+	return arr
+}
+
+// 4. Слияние двух отсортированных массивов
+func mergeSortedArrays(arr1, arr2 []int) []int {
+	i, j := 0, 0
+	result := []int{}
+	for i < len(arr1) && j < len(arr2) {
+		if arr1[i] <= arr2[j] {
+			result = append(result, arr1[i])
+			i++
+		} else {
+			result = append(result, arr2[j])
+			j++
 		}
 	}
+	result = append(result, arr1[i:]...)
+	result = append(result, arr2[j:]...)
 	return result
 }
 
-// 5. Расчет расстояния между двумя точками
-func distance(x1, y1, x2, y2 float64) float64 {
-	return math.Sqrt(math.Pow(x2-x1, 2) + math.Pow(y2-y1, 2))
-}
-
-// 2.1 Проверка на четность/нечетность
-func isEven(n int) string {
-	if n%2 == 0 {
-		return "Четное"
+// 5. Нахождение подстроки в строке без использования встроенных функций
+func findSubstring(s, sub string) int {
+	for i := 0; i <= len(s)-len(sub); i++ {
+		match := true
+		for j := 0; j < len(sub); j++ {
+			if s[i+j] != sub[j] {
+				match = false
+				break
+			}
+		}
+		if match {
+			return i
+		}
 	}
-	return "Нечетное"
+	return -1
 }
 
-// 2.2 Проверка високосного года
-func isLeapYear(year int) string {
-	if (year%4 == 0 && year%100 != 0) || (year%400 == 0) {
-		return "Високосный"
+// 1. Калькулятор с расширенными операциями
+func calculator(a, b float64, operator string) (float64, error) {
+	switch operator {
+	case "+":
+		return a + b, nil
+	case "-":
+		return a - b, nil
+	case "*":
+		return a * b, nil
+	case "/":
+		if b == 0 {
+			return 0, fmt.Errorf("деление на ноль")
+		}
+		return a / b, nil
+	case "^":
+		return math.Pow(a, b), nil
+	case "%":
+		return float64(int(a) % int(b)), nil
+	default:
+		return 0, fmt.Errorf("неизвестная операция")
 	}
-	return "Невисокосный"
 }
 
-// 2.3 Определение наибольшего из трех чисел
-func maxOfThree(a, b, c int) int {
-	if a >= b && a >= c {
-		return a
-	} else if b >= a && b >= c {
+// 2. Проверка палиндрома
+func isPalindrome(s string) bool {
+	s = strings.ToLower(s)
+	filtered := ""
+	for _, ch := range s {
+		if unicode.IsLetter(ch) || unicode.IsDigit(ch) {
+			filtered += string(ch)
+		}
+	}
+	for i := 0; i < len(filtered)/2; i++ {
+		if filtered[i] != filtered[len(filtered)-1-i] {
+			return false
+		}
+	}
+	return true
+}
+
+// 3. Нахождение пересечения трех отрезков
+func hasIntersection(a1, a2, b1, b2, c1, c2 int) bool {
+	start := max(a1, b1, c1)
+	end := min(a2, b2, c2)
+	return start <= end
+}
+
+func max(a, b, c int) int {
+	if a > b {
+		if a > c {
+			return a
+		}
+		return c
+	}
+	if b > c {
 		return b
 	}
 	return c
 }
 
-// 2.4 Категория возраста
-func ageCategory(age int) string {
-	switch {
-	case age <= 12:
-		return "Ребенок"
-	case age <= 17:
-		return "Подросток"
-	case age <= 64:
-		return "Взрослый"
-	default:
-		return "Пожилой"
+func min(a, b, c int) int {
+	if a < b {
+		if a < c {
+			return a
+		}
+		return c
 	}
+	if b < c {
+		return b
+	}
+	return c
 }
 
-// 2.5 Проверка делимости на 3 и 5
-func isDivisibleBy3And5(n int) string {
-	if n%3 == 0 && n%5 == 0 {
-		return "Делится"
+// 4. Выбор самого длинного слова в предложении
+func longestWord(sentence string) string {
+	words := strings.FieldsFunc(sentence, func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
+	longest := ""
+	for _, word := range words {
+		if len(word) > len(longest) {
+			longest = word
+		}
 	}
-	return "Не делится"
+	return longest
 }
 
-// 3.1 Факториал числа
-func factorial(n int) int {
-	result := 1
-	for i := 2; i <= n; i++ {
-		result *= i
-	}
-	return result
+// 5. Проверка високосного года
+func isLeapYear(year int) bool {
+	return (year%4 == 0 && year%100 != 0) || (year%400 == 0)
 }
 
-// 3.2 Числа Фибоначчи
-func fibonacci(n int) []int {
-	fib := make([]int, n)
-	if n > 0 {
-		fib[0] = 0
-	}
-	if n > 1 {
-		fib[1] = 1
-	}
-	for i := 2; i < n; i++ {
-		fib[i] = fib[i-1] + fib[i-2]
+// 1. Числа Фибоначчи до определенного числа
+func fibonacciUntil(n int) []int {
+	fib := []int{0, 1}
+	for {
+		next := fib[len(fib)-1] + fib[len(fib)-2]
+		if next > n {
+			break
+		}
+		fib = append(fib, next)
 	}
 	return fib
 }
 
-// 3.3 Реверс массива
-func reverseArray(arr []int) []int {
-	for i, j := 0, len(arr)-1; i < j; i, j = i+1, j-1 {
-		arr[i], arr[j] = arr[j], arr[i]
-	}
-	return arr
-}
-
-// 3.4 Поиск простых чисел
-func primeNumbers(n int) []int {
+// 2. Определение простых чисел в диапазоне
+func primesInRange(start, end int) []int {
 	primes := []int{}
-	for i := 2; i <= n; i++ {
-		isPrime := true
-		for j := 2; j <= int(math.Sqrt(float64(i))); j++ {
-			if i%j == 0 {
-				isPrime = false
-				break
-			}
-		}
-		if isPrime {
+	for i := start; i <= end; i++ {
+		if isPrime(i) {
 			primes = append(primes, i)
 		}
 	}
 	return primes
 }
 
-// 3.5 Сумма чисел в массиве
-func sumArray(arr []int) int {
-	sum := 0
-	for _, v := range arr {
-		sum += v
+func isPrime(n int) bool {
+	if n < 2 {
+		return false
 	}
-	return sum
+	for i := 2; i*i <= n; i++ {
+		if n%i == 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// 3. Числа Армстронга в заданном диапазоне
+func armstrongNumbersInRange(start, end int) []int {
+	armstrongs := []int{}
+	for i := start; i <= end; i++ {
+		if isArmstrong(i) {
+			armstrongs = append(armstrongs, i)
+		}
+	}
+	return armstrongs
+}
+
+func isArmstrong(n int) bool {
+	sum, temp, digits := 0, n, len(strconv.Itoa(n))
+	for temp > 0 {
+		digit := temp % 10
+		sum += int(math.Pow(float64(digit), float64(digits)))
+		temp /= 10
+	}
+	return sum == n
+}
+
+// 4. Реверс строки
+func reverseString(s string) string {
+	chars := []rune(s)
+	for i, j := 0, len(chars)-1; i < j; i, j = i+1, j-1 {
+		chars[i], chars[j] = chars[j], chars[i]
+	}
+	return string(chars)
+}
+
+// 5. Нахождение наибольшего общего делителя (НОД)
+func gcd(a, b int) int {
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
 }
 
 func main() {
-	fmt.Println("1. Сумма цифр числа:", sumOfDigits(1234))
-	fmt.Println("2. Преобразование температуры:", celsiusToFahrenheit(25))
-	fmt.Println("3. Удвоение массива:", doubleArray([]int{1, 2, 3, 4}))
-	fmt.Println("4. Объединение строк:", joinStrings([]string{"Hello", "world"}))
-	fmt.Println("5. Расстояние между точками:", distance(1, 1, 4, 5))
-	fmt.Println("2.1 Четное/Нечетное:", isEven(4))
-	fmt.Println("2.2 Високосный год:", isLeapYear(2020))
-	fmt.Println("2.3 Наибольшее из трех:", maxOfThree(4, 9, 7))
-	fmt.Println("2.4 Категория возраста:", ageCategory(25))
-	fmt.Println("2.5 Делимость на 3 и 5:", isDivisibleBy3And5(15))
-	fmt.Println("3.1 Факториал:", factorial(5))
-	fmt.Println("3.2 Числа Фибоначчи:", fibonacci(7))
-	fmt.Println("3.3 Реверс массива:", reverseArray([]int{1, 2, 3, 4, 5}))
-	fmt.Println("3.4 Простые числа до 20:", primeNumbers(20))
-	fmt.Println("3.5 Сумма чисел в массиве:", sumArray([]int{1, 2, 3, 4, 5}))
+	res, err := convertBase("101", 2, 10)
+	if err != nil {
+		fmt.Println("Ошибка при переводе системы счисления: ", err)
+	} else {
+		fmt.Println("Перевод системы счисления:", res)
+	}
+
+	a, b := solveQuadratic(1, -3, 2)
+	fmt.Println("Корни квадратного уравнения:", a, b)
+	fmt.Println("Сортировка по модулю:", sortByAbsolute([]int{-5, 1, -3, 2, 4}))
+	fmt.Println("Слияние массивов:", mergeSortedArrays([]int{1, 3, 5}, []int{2, 4, 6}))
+	fmt.Println("Нахождение подстроки:", findSubstring("hello world", "world"))
+
+	cRes, err := calculator(10, 3, "%")
+	if err != nil {
+		fmt.Println("Ошибка при выполнении вычислений: ", err)
+	} else {
+		fmt.Println("Расширенный калькулятор:", cRes)
+	}
+
+	fmt.Println("Проверка палиндрома:", isPalindrome("A man, a plan, a canal: Panama"))
+	fmt.Println("Пересечение отрезков:", hasIntersection(1, 5, 2, 6, 3, 7))
+	fmt.Println("Самое длинное слово:", longestWord("Очень интересный текст, в котором нужно найти длиннейшее слово!"))
+	fmt.Println("Високосный год:", isLeapYear(2024))
+	fmt.Println("Числа Фибоначчи:", fibonacciUntil(20))
+	fmt.Println("Простые числа в диапазоне:", primesInRange(10, 50))
+	fmt.Println("Числа Армстронга:", armstrongNumbersInRange(100, 999))
+	fmt.Println("Реверс строки:", reverseString("hello"))
+	fmt.Println("НОД:", gcd(48, 18))
 }
