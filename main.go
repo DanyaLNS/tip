@@ -2,25 +2,33 @@ package main
 
 import (
 	"tip/auth"
+	"tip/db"
 	"tip/handlers"
 
 	"github.com/gin-gonic/gin"
 )
+func setupDB() {
+	db.InitDB()
+	db.DB.AutoMigrate(&handlers.Song{})
+}
 
 func main() {
+	setupDB()
+
 	r := gin.Default()
 	r.POST("/login", handlers.Login)
 
 	protected := r.Group("/")
 	protected.Use(auth.AuthMiddleware())
 	{
-		protected.GET("/songs", handlers.GetSongs)
-		protected.GET("/songs/:id", handlers.GetSongByID)
-		protected.GET("/albums", handlers.GetAlbums)
-		protected.GET("/albums/:id", handlers.GetAlbumByID)
-		protected.GET("/artists", handlers.GetArtists)
-		protected.GET("/artists/:id", handlers.GetArtistByID)
+		protected.POST("/songs", handlers.CreateSong)
+		protected.PUT("/songs/:id", handlers.UpdateSong)
+		protected.DELETE("/songs/:id", handlers.DeleteSong)
 	}
+
+	r.GET("/songs", handlers.GetSongs)
+	r.GET("/songs/:id", handlers.GetSongByID)
+
 
 	r.Run()
 }

@@ -14,7 +14,6 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Здесь добавим простую проверку пароля
 	if creds.Username != "user" || creds.Password != "password" {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 		return
