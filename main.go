@@ -1,6 +1,7 @@
 package main
 
 import (
+	"tip/auth"
 	"tip/handlers"
 
 	"github.com/gin-gonic/gin"
@@ -8,13 +9,18 @@ import (
 
 func main() {
 	r := gin.Default()
+	r.POST("/login", handlers.Login)
 
-	r.GET("/songs", handlers.GetSongs)
-	r.GET("/songs/:id", handlers.GetSongByID)
-	r.GET("/albums", handlers.GetAlbums)
-	r.GET("/albums/:id", handlers.GetAlbumByID)
-	r.GET("/artists", handlers.GetArtists)
-	r.GET("/artists/:id", handlers.GetArtistByID)
+	protected := r.Group("/")
+	protected.Use(auth.AuthMiddleware())
+	{
+		protected.GET("/songs", handlers.GetSongs)
+		protected.GET("/songs/:id", handlers.GetSongByID)
+		protected.GET("/albums", handlers.GetAlbums)
+		protected.GET("/albums/:id", handlers.GetAlbumByID)
+		protected.GET("/artists", handlers.GetArtists)
+		protected.GET("/artists/:id", handlers.GetArtistByID)
+	}
 
 	r.Run()
 }
