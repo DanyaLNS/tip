@@ -30,7 +30,7 @@ func GetSongsByDuration(c *gin.Context) {
 	var songs []Song
 
 	if err := db.DB.Where("duration BETWEEN ? AND ? ", minDuration, maxDuration).Find(&songs).Error; err != nil {
-		handleError(c, http.StatusInternalServerError, "error fetching songs")
+		HandleError(c, http.StatusInternalServerError, "error fetching songs")
 		return
 	}
 
@@ -47,7 +47,7 @@ func UpdateSongsLabel(c *gin.Context) {
 	if err := tx.Model(&Song{}).Where("id = ?", id).Update("label", label).Error; err != nil {
 		tx.Rollback()
 		fmt.Println("Rollback tx")
-		handleError(c, http.StatusInternalServerError, "error updating label")
+		HandleError(c, http.StatusInternalServerError, "error updating label")
 		return
 	}
 
@@ -90,7 +90,7 @@ func GetSongs(c *gin.Context) {
 	}
 
 	if err := query.Find(&songs).Count(&total).Error; err != nil {
-		handleError(c, http.StatusRequestTimeout, "Request timed out")
+		HandleError(c, http.StatusRequestTimeout, "Request timed out")
 		return
 	}
 
@@ -107,7 +107,7 @@ func GetSongByID(c *gin.Context) {
 	id := c.Param("id")
 	var song Song
 	if err := db.DB.First(&song, id).Error; err != nil {
-		handleError(c, http.StatusNotFound, "song not found")
+		HandleError(c, http.StatusNotFound, "song not found")
 		return
 	}
 	c.JSON(http.StatusOK, song)
@@ -116,7 +116,7 @@ func GetSongByID(c *gin.Context) {
 func CreateSong(c *gin.Context) {
 	var newSong Song
 	if err := c.BindJSON(&newSong); err != nil {
-		handleError(c, http.StatusBadRequest, "invalid request")
+		HandleError(c, http.StatusBadRequest, "invalid request")
 		return
 	}
 	db.DB.Create(&newSong)
@@ -127,11 +127,11 @@ func UpdateSong(c *gin.Context) {
 	id := c.Param("id")
 	var updatedSong Song
 	if err := c.BindJSON(&updatedSong); err != nil {
-		handleError(c, http.StatusBadRequest, "invalid request")
+		HandleError(c, http.StatusBadRequest, "invalid request")
 		return
 	}
 	if err := db.DB.Model(&Song{}).Where("id = ?", id).Updates(updatedSong).Error; err != nil {
-		handleError(c, http.StatusNotFound, "song not found")
+		HandleError(c, http.StatusNotFound, "song not found")
 		return
 	}
 	c.JSON(http.StatusOK, updatedSong)
@@ -140,7 +140,7 @@ func UpdateSong(c *gin.Context) {
 func DeleteSong(c *gin.Context) {
 	id := c.Param("id")
 	if err := db.DB.Delete(&Song{}, id).Error; err != nil {
-		handleError(c, http.StatusNotFound, "song not found")
+		HandleError(c, http.StatusNotFound, "song not found")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "song deleted"})
