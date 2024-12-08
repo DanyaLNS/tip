@@ -27,7 +27,10 @@ func main() {
 	}
 
 	r.GET("/songs", handlers.GetSongs)
+	r.GET("/songs/duration", handlers.GetSongsByDuration)
 	r.GET("/songs/:id", handlers.GetSongByID)
+	r.GET("/songs/by-artist", handlers.CountSongsByArtist)
+	r.PUT("/songs/:id/label", handlers.UpdateSongsLabel)
 
 
 	r.Run()

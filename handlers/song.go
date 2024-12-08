@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,7 +17,54 @@ type Song struct {
 	Artist   string `json:"artist"`
 	Album    string `json:"album"`
 	Genre    string `json:"genre"`
-	Duration string `json:"duration"`
+	Duration int64 `json:"duration"`
+	Label *string `json:"label"`
+}
+
+	
+
+func GetSongsByDuration(c *gin.Context) {
+	minDuration := c.Query("minDuration")
+	maxDuration := c.Query("maxDuration")
+
+	var songs []Song
+
+	if err := db.DB.Where("duration BETWEEN ? AND ? ", minDuration, maxDuration).Find(&songs).Error; err != nil {
+		handleError(c, http.StatusInternalServerError, "error fetching songs")
+		return
+	}
+
+	c.JSON(http.StatusOK, songs)
+}
+
+func UpdateSongsLabel(c *gin.Context) {
+	label := c.Query("label")
+	id := c.Param("id")
+
+	tx := db.DB.Begin()
+	fmt.Println("Open tx")
+
+	if err := tx.Model(&Song{}).Where("id = ?", id).Update("label", label).Error; err != nil {
+		tx.Rollback()
+		fmt.Println("Rollback tx")
+		handleError(c, http.StatusInternalServerError, "error updating label")
+		return
+	}
+
+	tx.Commit()
+	fmt.Println("Commit tx")
+	c.JSON(http.StatusOK, gin.H{"message": "label updated successfully"})
+}
+
+func CountSongsByArtist(c *gin.Context) {
+	var result []struct {
+		Artist string
+		Count int
+	}
+
+	db.DB.Model(&Song{}).Select("artist, COUNT(*) as count").Group("artist").Scan(&result)
+
+	c.JSON(http.StatusOK, result)
 }
 
 func GetSongs(c *gin.Context) {
